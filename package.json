@@ -1,0 +1,28 @@
+
+{
+  "name": "react-native-cim",
+  "version": "1.0.0",
+  "description": "cim在reactnative的支持",
+  "homepage": "https://github.com/zogpap/react-native-cim#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zogpap/react-native-cim.git"
+  },
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react-native",
+    "react-native-cim"
+  ],
+  "author": {
+    "name": "zogpap",
+    "email": "zogpap@163.com"
+  },
+  "license": "",
+  "peerDependencies": {
+    "react-native": "^0.59.10"
+  }
+}
