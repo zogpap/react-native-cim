@@ -19,6 +19,19 @@
 3. In XCode, in the project navigator, select your project. Add `libRNCim.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
 4. Run your project (`Cmd+R`)<
 
+5. 推送设置---appdelegate 
+```
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken；
+[[RNCim instance] setDeviceToken:deviceToken];
+
+rn代码里：监听app前后台状态
+CimSocket.enterBackground();
+CimSocket.enterForeground();
+CimSocket.openApns();
+CimSocket.closeApns();
+
+```
+
 #### Android
 
 1. Open up `android/app/src/main/java/[...]/MainActivity.java`
