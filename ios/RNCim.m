@@ -1,32 +1,18 @@
 
 #import "RNCim.h"
-#import "CIMHeader.h"
+#import "RCTAssert.h"
+#import "RCTUtils.h"
+#import "RCTLog.h"
 
-#import "SocketRocket.h"
-
-#import "GCDAsyncSocket.h"
-#import "SentBody.pbobjc.h"
-#import "Message.pbobjc.h"
-#import "NSData+IM.h"
-#import "NSString+IM.h"
-
-static NSString _devicetoken=nil;
+static NSString *_devicetoken=nil;
 
 
-@interface RNCim : NSObject <GCDAsyncSocketDelegate,CIMPeerMessageObserver,CIMConnectionObserver>
-{
-    BOOL isObserving;
-}
-@property (strong, nonatomic) NSString *sockethost;
-@property (strong, nonatomic) NSString *port;
-@property (strong, nonatomic) NSString *apibase;
 
-@end
 
 @implementation RNCim
 
-NSString *const EVENT_MSG_NAME = "CIMMESSAGELISTER";
-NSString *const EVENT_CONNECT_NAME = "CIMCONNECTLISTER";
+NSString *const EVENT_MSG_NAME = @"CIMMESSAGELISTER";
+NSString *const EVENT_CONNECT_NAME = @"CIMCONNECTLISTER";
 
 +(RNCim*)instance {
     static RNCim *imService;
@@ -74,7 +60,6 @@ NSString *const EVENT_CONNECT_NAME = "CIMCONNECTLISTER";
     return dispatch_get_main_queue();
 }
 RCT_EXPORT_MODULE();
-
 
 - (void) msglistener:(NSNotification *) notification
 {
@@ -135,22 +120,26 @@ RCT_EXPORT_METHOD(removeConnectListener)
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(reconnect) {
      
   [[CIMService instance] reconnect];
+     return @true;
 }
 
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(disconnect) {
      
   [[CIMService instance] disconnect];
+     return @true;
 }
 
 
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(enterForeground) {
      
   [[CIMService instance] enterForeground];
+     return @true;
 }
 
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(enterBackground) {
      
   [[CIMService instance] enterBackground];
+     return @true;
 }
 
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getDeviceToken) {
@@ -179,11 +168,12 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getDeviceToken) {
 }
 
 - (void)cimDidConnectError:(NSError *)error{
-    NSLog(@"cimDidConnectError");
+    NSLog(@"cimDidConnectError%@",[error localizedDescription]);
     
     NSDictionary *json = @{
                             @"type": @"2",
                             @"title": @"cimDidConnectError",
+                            @"error": [error localizedDescription]
                           };
    [[NSNotificationCenter defaultCenter] postNotificationName:EVENT_CONNECT_NAME object:nil userInfo:json];
 
@@ -214,9 +204,39 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getDeviceToken) {
 - (void)cimHandleMessage:(CIMMessageModel *)msg{
     NSLog(@"ViewController:%@\nu用户：%@(%lld)\n---------",msg.content,msg.sender,msg.timestamp);
     
+     NSMutableDictionary *msgDic = [NSMutableDictionary dictionary];
+     if (msg) {
+          if (msg.action) {
+               [msgDic setObject:msg.action forKey:@"action"];
+          }
+          if (msg.content) {
+               [msgDic setObject:msg.content forKey:@"content"];
+          }
+          if (msg.extra) {
+               [msgDic setObject:msg.extra forKey:@"extra"];
+          }
+          if (msg.format) {
+               [msgDic setObject:msg.format forKey:@"format"];
+          }
+          if (msg.id_p) {
+               [msgDic setObject:[NSNumber numberWithLong:msg.id_p] forKey:@"id_p"];
+          }
+          if (msg.receiver) {
+               [msgDic setObject:msg.receiver forKey:@"receiver"];
+          }
+          if (msg.sender) {
+               [msgDic setObject:msg.sender forKey:@"sender"];
+          }
+          if (msg.timestamp) {
+               [msgDic setObject:[NSNumber numberWithLong:msg.timestamp] forKey:@"timestamp"];
+          }
+          if (msg.title) {
+               [msgDic setObject:msg.title forKey:@"action"];
+          }
+     }
     NSDictionary *json = @{
                             @"type": @"1",
-                            @"msg":msg,
+                            @"msg":msgDic,
                             @"title": @"cimCommonMsgSucess",
                           };
    [[NSNotificationCenter defaultCenter] postNotificationName:EVENT_MSG_NAME object:nil userInfo:json];

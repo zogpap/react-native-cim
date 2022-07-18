@@ -2,7 +2,7 @@
  * @Author: zogpap zogpap@163.com
  * @Date: 2022-07-13 12:24:48
  * @LastEditors: zogpap zogpap@163.com
- * @LastEditTime: 2022-07-14 10:06:33
+ * @LastEditTime: 2022-07-18 17:46:53
  * @FilePath: /react-native-cim/index.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,15 +11,15 @@ import { NativeModules ,NativeEventEmitter} from 'react-native';
 
 const { RNCim } = NativeModules;
 
-const EVENT_MSG_NAME = "CIMMESSAGELISTER";
-const EVENT_CONNECT_NAME = "CIMCONNECTLISTER";
+let EVENT_MSG_NAME = "CIMMESSAGELISTER";
+let EVENT_CONNECT_NAME = "CIMCONNECTLISTER";
 
 
 var eventEmitter = new NativeEventEmitter(RNCim);
 var listenerCount = eventEmitter.listenerCount;
 
 var addMessageListener = function (callback) {
-    if (listenerCount(EVENT_MSG_NAME) === 0) {
+    if (RNCim.setMsgListener) {
         RNCim.setMsgListener();
     }
     var res = eventEmitter.addListener(EVENT_MSG_NAME, callback);
@@ -30,7 +30,7 @@ var addMessageListener = function (callback) {
     res.remove = function () {
         // @ts-ignore
         this._remove();
-        if (listenerCount(EVENT_MSG_NAME) === 0) {
+        if (RNCim.removeMessageListener) {
             RNCim.removeMessageListener();
         }
     };
@@ -38,9 +38,11 @@ var addMessageListener = function (callback) {
 };
 
 var addConnectListener = function (callback) {
-    if (listenerCount(EVENT_CONNECT_NAME) === 0) {
-        RNCim.setConnectListener();
-    }
+    // if (listenerCount(EVENT_CONNECT_NAME) === 1) {
+        if (RNCim.setConnectListener) {
+            RNCim.setConnectListener();
+        }
+    // }
     var res = eventEmitter.addListener(EVENT_CONNECT_NAME, callback);
     // Path the remove call to also remove the native listener
     // if we no longer have listeners
@@ -49,15 +51,17 @@ var addConnectListener = function (callback) {
     res.remove = function () {
         // @ts-ignore
         this._remove();
-        if (listenerCount(EVENT_CONNECT_NAME) === 0) {
-            RNCim.removeConnectListener();
-        }
+        // if (listenerCount(EVENT_CONNECT_NAME) === 1) {
+            if (RNCim.removeConnectListener) {
+                RNCim.removeConnectListener();
+            }
+        // }
     };
     return res;
 };
 
 var apibaset = "";
-class CimSocket {
+class RNCIM {
 
     static init(sockethost,port,apibase){
         if (RNCim&&RNCim.init) {
@@ -139,7 +143,7 @@ class CimSocket {
     }
 
     //发送消息
-    static sendMessage({sender,reviceid,action,content,format,extra,callback}){
+    static async sendMessage({sender,reviceid,action,content,format,extra,callback}){
         if (!apibaset) {
             console.error("未初始化init");
             return;
@@ -147,7 +151,7 @@ class CimSocket {
         
         let obj = {
             sender: sender,
-            reviceid: reviceid,
+            receiver: reviceid,
             action:action,
             content:content,
             format:format,
@@ -164,7 +168,8 @@ class CimSocket {
         };
         try {
             var allurl = apibaset + "/api/message/send";
-            
+            console.log(allurl+"---:",JSON.stringify(obj));
+
             let res = await fetch(allurl, {
                 method: "POST",
                 headers: headers,
@@ -210,7 +215,7 @@ class CimSocket {
     }
 
     //苹果专用
-    static openApns(uid,deviceToken,callback){
+    static async openApns(uid,deviceToken,callback){
         if (!apibaset) {
             console.error("未初始化init");
             return;
@@ -266,7 +271,7 @@ class CimSocket {
     }
 
     //苹果专用
-    static closeApns(uid,callback){
+    static async closeApns(uid,callback){
         if (!apibaset) {
             console.error("未初始化init");
             return;
@@ -322,4 +327,4 @@ class CimSocket {
 
 }
 
-export default CimSocket;
+export default RNCIM;

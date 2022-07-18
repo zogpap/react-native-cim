@@ -1,8 +1,8 @@
 
 {
   "name": "react-native-cim",
-  "version": "1.0.0",
-  "description": "cim在reactnative的支持",
+  "version": "1.0.1",
+  "description": "cim在reactnative的支持，支持推送",
   "homepage": "https://github.com/zogpap/react-native-cim#readme",
   "repository": {
     "type": "git",
